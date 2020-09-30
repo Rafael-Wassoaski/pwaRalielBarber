@@ -4,17 +4,26 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from './api/api';
+import AsyncStorage from '@react-native-community/async-storage';
+import { TextInputMask } from 'react-native-masked-text'
 
 
 async function login(username, password, navigation){
-    await api.post('https://ServerRaliel-1.extremegame300.repl.co/login',{
-        username: username.text,
-        password: password.text
-    }).then(function(response){
-        if(response.data.status == 200){
-            navigation.navigate('Raliel Barber')
+    await api.post('/login',{
+        username: username,
+        password: password
+    }).then(async function(response){
+        if(response.data.status == 200){ 
+            if(!response.data.super){
+                await AsyncStorage.setItem('ID', response.data.id);
+                await AsyncStorage.setItem('NOME', response.data.nome);
+                navigation.navigate('Raliel Barber');
+            }else{
+                await AsyncStorage.setItem('ID', 1);
+                navigation.navigate('Administrador');
+            }
+        
         }else if(response.data.status == 400){
-            console.log("n cadasto")
             const notificacao = () => toast.error("Usuario ou senha incorretos", {
                 position: "bottom-center",
                 autoClose: 5000,
@@ -28,47 +37,60 @@ async function login(username, password, navigation){
     });
 }
 
+export default class LoginScreen extends Component{
 
-export default function LoginScreen({navigation}){
+    constructor(props){
+        super(props);
 
-        const [username, setUsername] = useState("");
-        const [password, setPassword] = useState("");
-        
+        this.state = {
+            username: '',
+            password: ''
+        }
+    }
+
+    
+
+    render(){
         return(
             <View style = {style.container}>
-                <View>
+                <View> 
                 <TextInput
                     style={style.input} 
-                    placeholder = "Nome de usuario"   
-                    onChangeText={(text) => setUsername({text})}
-                    value = {username.text}              
+                    placeholder = "Numero de telefone"   
+                    keyboardType = "phone-pad"
+                    onChangeText={(text) => this.setState({username: text})}
+                    value = {this.state.username.text}              
                 />
 
                 <TextInput
                     style={style.input} 
                     placeholder = "Senha"
-                    onChangeText={(text) => setPassword({text})}
-                    value = {password.text}                  
+                    secureTextEntry = {true}
+                    onChangeText={(text) => this.setState({password: text})}
+                    value = {this.state.password.text}                  
                 />
 
-                <Button style = {style.buttonLogin}
+                <Button 
+                style = {style.buttonLogin}
                 title = 'Login'
-                onPress = {()=>login(username,password, navigation)}>
+                onPress = {()=>login(this.state.username,this.state.password, this.props.navigation)}>
                     
                 </Button>
 
-                <Button style = {style.buttonSignUp}
+                <View style={style.separator} />
+
+                <Button
                 title = 'Cadastre-se'
-                onPress ={()=>navigation.navigate('Cadastro')}>
+                onPress ={()=>this.props.navigation.navigate('Cadastro')}>
                     
                 </Button>
-
-
+                <ToastContainer />
                 </View>
 
             </View>
         );
     }
+}
 
 const style = StyleSheet.create({
 
@@ -88,15 +110,18 @@ const style = StyleSheet.create({
     },
 
     buttonLogin:{
-        flex: 1,
         paddingVertical: 15,
         borderWidth: 1,
-        backgroundColor : 'red'
+        marginBottom: 10,
     },
     buttonSignUp:{
-        flex: 1,
         paddingVertical: 20,
         borderWidth: 1,
-    }
+    },
+    separator: {
+        marginVertical: 8,
+        borderBottomColor: '#737373',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+      },
 
 });

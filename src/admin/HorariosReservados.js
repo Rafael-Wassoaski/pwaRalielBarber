@@ -10,11 +10,10 @@ var meses = new Map();
 var cortes = new Map();
 
 
-async function getMeusHorarios(idUser, exThis) {
+async function getHoraios(idUser, exThis) {
 
-  await api.post('/meusHorarios', {
-    idUser: idUser,
-  }).then(function (response) {
+  await api.get('/horariosReservados').then(function (response) {
+    console.log(response.data.horarios)
     exThis.setState({horarios: response.data.horarios});
   })
 
@@ -36,7 +35,7 @@ async function cancelarHorario(idUser, data, exThis) {
   }).then(function (response) {
  
     if(response.data.status === 200){
-      getMeusHorarios(exThis.state.idUser, exThis)
+      getHoraios(exThis.state.idUser, exThis)
       const notificacao = () => toast.success("Horario cancelado", {
         position: "top-center",
         autoClose: 5000,
@@ -61,7 +60,7 @@ async function cancelarHorario(idUser, data, exThis) {
 
 }
 
-export default class MeusHorariosScreen extends Component {
+export default class HorariosReservados extends Component {
 
   constructor(props) {
     super(props);
@@ -74,7 +73,7 @@ export default class MeusHorariosScreen extends Component {
     AsyncStorage.getItem("ID").then((value) => {
       if (value) {
         this.setState({ idUser: value });
-        getMeusHorarios(this.state.idUser, this);
+        getHoraios(this.state.idUser, this);
       }
     });
 
@@ -82,7 +81,21 @@ export default class MeusHorariosScreen extends Component {
 
   }
   render() {
-    getMeusHorarios(this.state.idUser, this);
+
+    const createTwoButtonAlert = () =>
+    Alert.alert(
+      "Alert Title",
+      "My Alert Msg",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => console.log("OK Pressed") }
+      ],
+      { cancelable: false }
+    );
 
     meses.set('1', 'Janeiro');
     meses.set('2', 'Fevereiro');
@@ -113,23 +126,23 @@ export default class MeusHorariosScreen extends Component {
   
 
       return (
-
-        <View style = {{borderRadius: 2, borderWidth: 1, borderColor: "#20232a", flex: 1, flexDirection:'column', marginTop : 5, marginLeft: 5}}>
-             <TouchableOpacity style = {{marginTop: 5}}
-             onPress={()=>cofirmaCancelamento(this.state.idUser, hora, this)}>
-            <Text style = {{marginLeft: 5}}>{`${dataFormatada[2]} de ${meses.get(dataFormatada[1])} de ${dataFormatada[0]} ` }</Text>
-            <Text style = {{marginLeft: 5, marginTop: 5}}>{`${horaFormatada[0]}:${horaFormatada[1]}` }</Text>
-            <Text style = {{marginLeft: 5, marginTop: 5}}>{`Barbeiro: ${nome}`}</Text>
-            <Text style = {{marginLeft: 5, marginTop: 5}}>{`${cortes.get(corte)}`}</Text>
-            </TouchableOpacity>
-            </View>
+        <View>
+          <Text>{`${dataFormatada[2]} de ${meses.get(dataFormatada[1])} de ${dataFormatada[0]} `}</Text>
+          <Text>{`${horaFormatada[0]}:${horaFormatada[1]}`}</Text>
+          <Text>{`Cliente: ${nome}`}</Text>
+          <Text>{`Corte: ${cortes.get(corte)}`}</Text>
+          <TouchableOpacity
+          onPress={()=>cofirmaCancelamento(id, hora, this)}>
+          <XCircleFill/>
+          </TouchableOpacity>
+        </View>
       )
     }
 
     const renderItem = ({ item }) => (
       <Item hora={item.hora}
-        id={item.id}
-        nome={item.nome}
+        id={item.idUser}
+        nome={item.nomeCliente}
         corte={item.corte} />
     );
 
@@ -138,9 +151,9 @@ export default class MeusHorariosScreen extends Component {
       if (horarios.length === 0) {
 
         return (
-          <View style = {{alignSelf: 'center'}}>
-                    <Text style = {{flex: 1, flexDirection:'row', marginTop : 5, marginLeft: 5}}>Sem horarios reservados</Text>
-                </View>
+          <View>
+            <Text>Sem horarios reservados</Text>
+          </View>
         );
 
       } else {

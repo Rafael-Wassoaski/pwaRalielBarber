@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component,} from 'react';
 import {StyleSheet, View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
@@ -10,11 +10,13 @@ import MeusHorarios from './horaios/MeusHorarios';
 
 const Tab  = createBottomTabNavigator();
 
-export default function HorariosScreen({navigation}){
+export default class HorariosScreen extends Component{
+    render(){
     return(
       <Tab.Navigator independent={true}>
         <Tab.Screen name = 'Horarios Livres' component ={HoraiosLivres}/>
         <Tab.Screen name = 'Meus Horarios ' component ={MeusHorarios}/>
     </Tab.Navigator>
     );
+    }
 }

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, Component} from 'react';
 import {StyleSheet, View, Text, TextInput, Button} from 'react-native';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
@@ -7,11 +7,10 @@ import api from './api/api';
 
 async function cadastro(username, password, phone, navigation){
         
-
     await api.post('/register', {
-        username: username.text,
-        password: password.text,
-        phone: phone.text,
+        username: username,
+        password: password,
+        phone: phone,
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'https://ServerRaliel-1.extremegame300.repl.co'
@@ -44,36 +43,45 @@ async function cadastro(username, password, phone, navigation){
 
 }
 
-export default function CadastroScreen({navigation}){
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [phone, setPhone] = useState("");
+export default  class CadastroScreen extends Component{
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            username: '',
+            password: '',
+            phone: ''
+        }
+    }
+
+    render(){
         return(
             <View style = {style.container}>
                 <View>
                 <TextInput
                     style={style.input} 
                     placeholder = "Nome de usuario"   
-                    onChangeText={(text) => setUsername({text})}            
+                    onChangeText={(text) => this.setState({username:text})}            
                 />
 
                 <TextInput
                     style={style.input} 
                     placeholder = "Senha"
                     secureTextEntry = {true}
-                    onChangeText={(text) => setPassword({text})}               
+                    onChangeText={(text) => this.setState({password:text})}               
                 />
 
                 <TextInput
                     style={style.input} 
                     placeholder = "Telefone" 
                     keyboardType = "phone-pad"
-                    onChangeText={(text) => setPhone({text})}                
+                    onChangeText={(text) => this.setState({phone:text})}                
                 />
 
                 <Button style = {style.buttonLogin}
                     title = "Cadastrar-se"
-                    onPress = {() => cadastro(username, password, phone, navigation) }
+                    onPress = {() => cadastro(this.state.username, this.state.password, this.state.phone.toString(), this.props.navigation) }
                 >
                 </Button>
 
@@ -83,6 +91,7 @@ export default function CadastroScreen({navigation}){
             </View>
         );
     }
+}
 
 const style = StyleSheet.create({
 
